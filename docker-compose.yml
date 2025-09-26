@@ -1,0 +1,74 @@
+services:
+  ceramicraft-merchant-frontend:
+    build: fe-mer
+    hostname: fe-mer
+    container_name: fe-mer
+    networks:
+      - ceramicraft
+    restart: unless-stopped
+
+  ceramicraft-customer-frontend:
+    build: fe-cus
+    hostname: fe-cus
+    container_name: fe-cus
+    networks:
+      - ceramicraft
+    restart: unless-stopped
+
+  ceramicraft-user-mservice:
+    build: ms-user/server
+    hostname: ms-user
+    container_name: ms-user
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ceramicraft
+      DB_PASSWORD: ceramicraft123
+      DB_NAME: ceramicraft
+    depends_on:
+      - mysql
+    networks:
+      - ceramicraft
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:latest
+    hostname: mysql
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ceramicraft123
+      MYSQL_DATABASE: ceramicraft
+      MYSQL_USER: ceramicraft
+      MYSQL_PASSWORD: ceramicraft123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ceramicraft
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    hostname: nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - ceramicraft-merchant-frontend
+      - ceramicraft-customer-frontend
+    networks:
+      - ceramicraft
+    restart: unless-stopped
+
+networks:
+  ceramicraft:
+    driver: "bridge"
+
+volumes:
+  mysql_data:
+    driver: local
+  nginx_logs:
+    driver: local
