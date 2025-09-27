@@ -2,7 +2,7 @@ services:
   ceramicraft-merchant-frontend:
     build: fe-mer
     hostname: femer.local
-    container_name: fe-mer
+    container_name: ceramicraft-merchant-frontend
     networks:
       - ceramicraft
     restart: unless-stopped
@@ -10,7 +10,7 @@ services:
   ceramicraft-customer-frontend:
     build: fe-cus
     hostname: fecus.local
-    container_name: fe-cus
+    container_name: ceramicraft-customer-frontend
     networks:
       - ceramicraft
     restart: unless-stopped
@@ -18,7 +18,7 @@ services:
   ceramicraft-user-mservice:
     build: ms-user/server
     hostname: msuser.local
-    container_name: ms-user
+    container_name: ceramicraft-user-mservice
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
@@ -26,7 +26,8 @@ services:
       DB_PASSWORD: ceramicraft123
       DB_NAME: ceramicraft
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - ceramicraft
     restart: unless-stopped
@@ -45,6 +46,12 @@ services:
     networks:
       - ceramicraft
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "ceramicraft", "-pceramicraft123"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
 
   nginx:
     image: nginx:1.28
