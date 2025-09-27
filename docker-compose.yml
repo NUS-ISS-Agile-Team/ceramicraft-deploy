@@ -32,7 +32,7 @@ services:
     restart: unless-stopped
 
   mysql:
-    image: mysql:latest
+    image: mysql:8.0
     hostname: mysql.local
     container_name: mysql
     environment:
