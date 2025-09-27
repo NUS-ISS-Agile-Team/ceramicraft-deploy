@@ -59,6 +59,7 @@ services:
     depends_on:
       - ceramicraft-merchant-frontend
       - ceramicraft-customer-frontend
+      - ceramicraft-user-mservice
     networks:
       - ceramicraft
     restart: unless-stopped
