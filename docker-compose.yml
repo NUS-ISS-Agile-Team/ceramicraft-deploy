@@ -1,7 +1,7 @@
 services:
   ceramicraft-merchant-frontend:
     build: fe-mer
-    hostname: fe-mer
+    hostname: femer.local
     container_name: fe-mer
     networks:
       - ceramicraft
@@ -9,7 +9,7 @@ services:
 
   ceramicraft-customer-frontend:
     build: fe-cus
-    hostname: fe-cus
+    hostname: fecus.local
     container_name: fe-cus
     networks:
       - ceramicraft
@@ -17,7 +17,7 @@ services:
 
   ceramicraft-user-mservice:
     build: ms-user/server
-    hostname: ms-user
+    hostname: msuser.local
     container_name: ms-user
     environment:
       DB_HOST: mysql
@@ -33,7 +33,7 @@ services:
 
   mysql:
     image: mysql:latest
-    hostname: mysql
+    hostname: mysql.local
     container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: ceramicraft123
@@ -48,7 +48,7 @@ services:
 
   nginx:
     image: nginx:latest
-    hostname: nginx
+    hostname: nginx.local
     container_name: nginx
     ports:
       - "80:80"
