@@ -47,7 +47,7 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:latest
+    image: nginx:1.28
     hostname: nginx.local
     container_name: nginx
     ports:
