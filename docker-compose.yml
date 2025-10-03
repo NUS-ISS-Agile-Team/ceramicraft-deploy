@@ -20,11 +20,26 @@ services:
     hostname: msuser.local
     container_name: ceramicraft-user-mservice
     environment:
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_USER: ceramicraft
-      DB_PASSWORD: ceramicraft123
-      DB_NAME: ceramicraft
+      MYSQL_PASSWORD=${DB_PASSWORD}
+      SMTP_PASSWORD=${SMTP_PASSWORD}
+      SMTP_EMAIL_FROM=${SMTP_USERNAME}
+      JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ceramicraft
+    restart: unless-stopped
+
+  ceramicraft-cmdt-mservice:
+    build: ms-cmdt/server
+    hostname: mscmdt.local
+    container_name: ceramicraft-cmdt-mservice
+    environment:
+      MYSQL_PASSWORD=${DB_PASSWORD}
+      SMTP_PASSWORD=${SMTP_PASSWORD}
+      SMTP_EMAIL_FROM=${SMTP_USERNAME}
+      JWT_SECRET=${JWT_SECRET}
     depends_on:
       mysql:
         condition: service_healthy
@@ -34,13 +49,10 @@ services:
 
   mysql:
     image: mysql:8.0
-    hostname: mysql-container
+    hostname: ${DB_HOSTNAME}
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ceramicraft123
-      MYSQL_DATABASE: ceramicraft
-      MYSQL_USER: ceramicraft
-      MYSQL_PASSWORD: ceramicraft123
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -62,7 +74,6 @@ services:
       - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - nginx_logs:/var/log/nginx
     depends_on:
       - ceramicraft-merchant-frontend
       - ceramicraft-customer-frontend
@@ -77,6 +88,4 @@ networks:
 
 volumes:
   mysql_data:
-    driver: local
-  nginx_logs:
     driver: local
