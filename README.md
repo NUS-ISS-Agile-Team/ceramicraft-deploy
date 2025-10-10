@@ -12,11 +12,62 @@ ceramicraft-deploy/
 ├── ms-order/                  # 订单微服务 (Go)
 ├── ms-pay/                    # 支付微服务 (Go)
 ├── ms-cmdt/                   # 商品微服务 (Go)
+├── dev-env/                   # 开发环境配置
 ├── nginx/                     # Nginx 配置
-└── docker-compose.yml         # Docker 编排文件
+├── mysql/                     # MySQL 初始化脚本
+└── docker-compose.yml         # 生产环境 Docker 编排文件
 ```
 
-## 🚀 快速开始
+## �️ 开发环境
+
+对于本地开发，我们提供了独立的开发环境配置，包含必要的基础服务。
+
+### 开发环境服务
+
+开发环境(`dev-env/`)包含以下服务：
+
+| 服务 | 端口 | 访问地址 | 用途 |
+|------|------|----------|------|
+| MySQL | 3306 | localhost:3306 | 主数据库 |
+| phpMyAdmin | 8080 | http://localhost:8080 | 数据库管理界面 |
+| Kafka | 9092 | localhost:9092 | 消息队列 |
+| Kafka UI | 8081 | http://localhost:8081 | Kafka 管理界面 |
+| Zookeeper | 2181 | localhost:2181 | Kafka 协调服务 |
+
+### 启动开发环境
+
+```bash
+# 进入开发环境目录
+cd dev-env
+
+# 启动开发环境服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看服务日志
+docker-compose logs -f
+```
+
+### 开发环境数据库配置
+
+- **数据库名**: `ceramicraft`
+- **用户名**: `ceramicraft`
+- **密码**: `ceramicraft123`
+- **Root 密码**: `root123`
+
+### 停止开发环境
+
+```bash
+# 在 dev-env 目录下执行
+docker-compose down
+
+# 停止并删除数据卷（会清除所有数据）
+docker-compose down -v
+```
+
+## �🚀 快速开始
 
 ### 前置要求
 
@@ -117,9 +168,11 @@ docker-compose logs -f
 |------|----------|------|
 | 商户前端 | http://localhost:80 (Host: merchant.ceramicraft.local) | 商户管理界面 |
 | 客户前端 | http://localhost:80 (Host: customer.ceramicraft.local) | 客户购物界面 |
-| 用户微服务 | http://localhost:8081 | HTTP API |
+| 用户微服务 | http://localhost:8082 | HTTP API |
 | 用户微服务 gRPC | localhost:9001 | gRPC 服务 |
 | MySQL 数据库 | localhost:3306 | 数据库连接 |
+| phpMyAdmin | http://localhost:8080 | 数据库管理（开发环境） |
+| Kafka UI | http://localhost:8081 | 消息队列管理（开发环境） |
 
 ### 配置本地域名解析 (可选)
 
@@ -138,6 +191,8 @@ sudo echo "127.0.0.1 customer.ceramicraft.local" >> /etc/hosts
 
 ## 🗄️ 数据库配置
 
+### 生产环境数据库
+
 系统会自动创建 MySQL 数据库，默认配置：
 
 - **数据库名**: `ceramicraft`
@@ -145,9 +200,20 @@ sudo echo "127.0.0.1 customer.ceramicraft.local" >> /etc/hosts
 - **密码**: `ceramicraft123`
 - **Root 密码**: `ceramicraft123`
 
-数据会持久化存储在 Docker 卷 `mysql_data` 中。
+### 开发环境数据库
 
-## 🛠️ 开发模式
+开发环境使用相同的数据库配置：
+
+- **数据库名**: `ceramicraft`
+- **用户名**: `ceramicraft`
+- **密码**: `ceramicraft123`
+- **Root 密码**: `root123`
+
+数据会持久化存储在 Docker 卷中，重启容器后数据不会丢失。
+
+您可以通过 phpMyAdmin (http://localhost:8080) 管理开发环境数据库。
+
+## 🛠️ 开发和调试
 
 ### 查看实时日志
 
@@ -190,6 +256,9 @@ docker-compose up -d ceramicraft-user-mservice
    # 检查端口占用
    lsof -i :80
    lsof -i :3306
+   lsof -i :8080   # phpMyAdmin
+   lsof -i :8081   # Kafka UI
+   lsof -i :9092   # Kafka
    
    # 停止占用端口的服务或修改 docker-compose.yml 中的端口配置
    ```
@@ -204,17 +273,30 @@ docker-compose up -d ceramicraft-user-mservice
    
    # 重置 MySQL 数据 (注意：会删除所有数据)
    docker-compose down
-   docker volume rm ceramicraft-deploy_mysql_data
+   docker volume rm ceramicraft-deploy_mysql_data  # 生产环境
+   docker volume rm dev-env_mysql_data              # 开发环境
    docker-compose up -d
    ```
 
-3. **前端构建失败**
+3. **Kafka 连接问题**
+   ```bash
+   # 检查 Kafka 和 Zookeeper 状态
+   docker-compose ps kafka zookeeper
+   
+   # 查看 Kafka 日志
+   docker-compose logs kafka
+   
+   # 重启 Kafka 服务
+   docker-compose restart kafka zookeeper
+   ```
+
+4. **前端构建失败**
    ```bash
    # 清理构建缓存
    docker-compose build --no-cache fe-mer fe-cus
    ```
 
-4. **子模块更新问题**
+5. **子模块更新问题**
    ```bash
    # 强制更新子模块
    git submodule foreach --recursive git reset --hard
@@ -223,6 +305,7 @@ docker-compose up -d ceramicraft-user-mservice
 
 ### 清理环境
 
+**生产环境清理：**
 ```bash
 # 停止所有服务
 docker-compose down
@@ -231,6 +314,21 @@ docker-compose down
 docker-compose down -v
 
 # 删除所有相关镜像
+docker-compose down --rmi all
+```
+
+**开发环境清理：**
+```bash
+# 在 dev-env 目录下执行
+cd dev-env
+
+# 停止开发环境服务
+docker-compose down
+
+# 停止并删除开发环境数据卷
+docker-compose down -v
+
+# 删除开发环境相关镜像
 docker-compose down --rmi all
 ```
 

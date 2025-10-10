@@ -1,0 +1,99 @@
+services:
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: ceramicraft-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: ceramicraft
+      MYSQL_USER: ceramicraft
+      MYSQL_PASSWORD: ceramicraft123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - ceramicraft-dev
+
+  # phpMyAdmin数据库管理工具
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: ceramicraft-phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root123
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - ceramicraft-dev
+
+  # Zookeeper (Kafka需要)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: ceramicraft-zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - ceramicraft-dev
+
+  # Kafka消息队列
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: ceramicraft-kafka
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - ceramicraft-dev
+
+  # Kafka UI管理界面
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:latest
+    container_name: ceramicraft-kafka-ui
+    restart: always
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - ceramicraft-dev
+
+volumes:
+  mysql_data:
+    driver: local
+  kafka_data:
+    driver: local
+
+networks:
+  ceramicraft-dev:
+    driver: bridge
