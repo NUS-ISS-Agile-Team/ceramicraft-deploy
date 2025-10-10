@@ -47,6 +47,40 @@ services:
       - ceramicraft
     restart: unless-stopped
 
+  ceramicraft-order-mservice:
+    build: ms-order/server
+    hostname: msorder.local
+    container_name: ceramicraft-order-mservice
+    environment:
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_EMAIL_FROM=${SMTP_USERNAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - KAFKA_BROKER=${KAFKA_INTERNAL_HOST}:${KAFKA_INTERNAL_PORT}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ceramicraft
+    restart: unless-stopped
+
+  ceramicraft-pay-mservice:
+    build: ms-pay/server
+    hostname: mspay.local
+    container_name: ceramicraft-pay-mservice
+    environment:
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_EMAIL_FROM=${SMTP_USERNAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - KAFKA_BROKER=${KAFKA_INTERNAL_HOST}:${KAFKA_INTERNAL_PORT}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ceramicraft
+    restart: unless-stopped
+
   mysql:
     image: mysql:${MYSQL_VERSION}
     hostname: ${DB_HOSTNAME}
