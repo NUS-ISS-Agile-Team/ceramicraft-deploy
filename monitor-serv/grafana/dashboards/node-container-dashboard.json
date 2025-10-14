@@ -1,0 +1,257 @@
+{
+  "__inputs": [],
+  "__requires": [
+    {"type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0"}
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "row",
+      "title": "Node System Metrics",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "CPU Usage %",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 70},
+              {"color": "red", "value": 90}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Memory Usage %",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 70},
+              {"color": "red", "value": 90}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Disk Usage %",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "100 - ((node_filesystem_avail_bytes{mountpoint=\"/\"} * 100) / node_filesystem_size_bytes{mountpoint=\"/\"})",
+          "legendFormat": "Root FS"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 70},
+              {"color": "red", "value": 90}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Load Average 1m",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "node_load1",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 2},
+              {"color": "red", "value": 4}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "CPU Usage Over Time",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 5},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Usage Over Time",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 5},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Container Metrics",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 11},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Container CPU Usage",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{name!=\"\"}[5m])) by (name) * 100",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 12},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Container Memory Usage",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum(container_memory_usage_bytes{name!=\"\"}) by (name)",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 12},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Network I/O",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum(rate(container_network_receive_bytes_total[5m])) by (name)",
+          "legendFormat": "{{name}} - RX"
+        },
+        {
+          "expr": "sum(rate(container_network_transmit_bytes_total[5m])) by (name)",
+          "legendFormat": "{{name}} - TX"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 18},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Disk I/O",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum(rate(container_fs_reads_bytes_total[5m])) by (name)",
+          "legendFormat": "{{name}} - Read"
+        },
+        {
+          "expr": "sum(rate(container_fs_writes_bytes_total[5m])) by (name)",
+          "legendFormat": "{{name}} - Write"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 18},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["infrastructure", "node", "container"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Node & Container Monitoring",
+  "uid": "node-container-dashboard",
+  "version": 1
+}

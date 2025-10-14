@@ -1,0 +1,115 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/targets:/etc/prometheus/targets
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
+    ports:
+      - '9090:9090'
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    restart: always
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - '9100:9100'
+    restart: always
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - '8081:8080'
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: always
+
+  mysqld-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysqld-exporter
+    volumes:
+      - ./mysqld-exporter.cnf:/.my.cnf
+    ports:
+      - '9104:9104'
+    restart: always
+    depends_on:
+      - prometheus
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    environment:
+      - REDIS_ADDR=redis://redis-container:6379
+    ports:
+      - '9121:9121'
+    restart: always
+    depends_on:
+      - prometheus
+
+  mongodb-exporter:
+    image: bitnami/mongodb-exporter:latest
+    container_name: mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo-container:27017
+    ports:
+      - '9216:9216'
+    restart: always
+    depends_on:
+      - prometheus
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka-exporter
+    command:
+      - --kafka.server=kafka-container:9092
+    ports:
+      - '9308:9308'
+    restart: always
+    depends_on:
+      - prometheus
+
+# 可选: 增加 blackbox_exporter, mysqld_exporter, redis_exporter, kafka_exporter 等
+# 以及 golang 服务的自定义 metrics endpoint
+
+networks:
+  default:
+    external: true
+    name: ceramicraft-network

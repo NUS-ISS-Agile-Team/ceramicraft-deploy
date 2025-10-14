@@ -1,0 +1,228 @@
+{
+  "__inputs": [],
+  "__requires": [
+    {"type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0"}
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "row",
+      "title": "Kafka Cluster Overview",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "Kafka Brokers",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "kafka_brokers",
+          "legendFormat": "Brokers"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Topics Count",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "kafka_topic_partitions",
+          "legendFormat": "Topics"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Consumer Groups",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "kafka_consumer_group_members",
+          "legendFormat": "Consumer Groups"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Total Messages",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum(kafka_topic_partition_current_offset)",
+          "legendFormat": "Messages"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Message Rate (per second)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_topic_partition_current_offset[5m])) by (topic)",
+          "legendFormat": "{{topic}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 5},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Consumer Lag",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "kafka_consumer_group_lag_sum",
+          "legendFormat": "{{group}} - {{topic}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 5},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Kafka Topics Details",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 11},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Topic Partition Count",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "kafka_topic_partitions",
+          "legendFormat": "{{topic}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 12},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Topic Size (bytes)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "kafka_topic_partition_current_offset * kafka_topic_partition_oldest_offset",
+          "legendFormat": "{{topic}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 12},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Consumer Groups Performance",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Consumer Group Lag by Topic",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "kafka_consumer_group_lag",
+          "legendFormat": "{{group}} - {{topic}} - {{partition}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 19},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Consumer Group Members",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "kafka_consumer_group_members",
+          "legendFormat": "{{group}}"
+        }
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 19},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["kafka", "messaging"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Kafka Monitoring",
+  "uid": "kafka-dashboard",
+  "version": 1
+}

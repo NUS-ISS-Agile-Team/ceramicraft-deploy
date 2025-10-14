@@ -1,0 +1,6 @@
+[
+  {
+    "targets": ["mongodb-exporter:9216"],
+    "labels": {"job": "mongodb"}
+  }
+]
