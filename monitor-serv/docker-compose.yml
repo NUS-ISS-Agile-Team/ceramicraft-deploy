@@ -85,7 +85,7 @@ services:
       - prometheus
 
   mongodb-exporter:
-    image: percona/mongodb_exporter:latest
+    image: percona/mongodb_exporter:0.47.1
     container_name: mongodb-exporter
     command:
       - '--mongodb.uri=mongodb://mongo-container:27017'
