@@ -87,8 +87,8 @@ services:
   mongodb-exporter:
     image: bitnami/mongodb-exporter:latest
     container_name: mongodb-exporter
-    environment:
-      - MONGODB_URI=mongodb://mongo-container:27017
+    command:
+      - --mongodb.uri=mongodb://mongo-container:27017
     ports:
       - '9216:9216'
     restart: always
