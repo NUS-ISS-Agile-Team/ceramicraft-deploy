@@ -106,9 +106,6 @@ services:
     depends_on:
       - prometheus
 
-# 可选: 增加 blackbox_exporter, mysqld_exporter, redis_exporter, kafka_exporter 等
-# 以及 golang 服务的自定义 metrics endpoint
-
 networks:
   default:
     external: true
