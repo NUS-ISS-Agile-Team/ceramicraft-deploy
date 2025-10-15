@@ -42,17 +42,14 @@ services:
     restart: always
     pid: host
     volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
+      - '/:/host:ro,rslave'
     command:
-      - --path.procfs=/host/proc
-      - --path.sysfs=/host/sys
-      - --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)
+      - '--path.rootfs=/host'
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
+    privileged: true
     ports:
       - '8081:8080'
     volumes:
@@ -60,6 +57,9 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
     restart: always
 
   mysqld-exporter:
@@ -76,8 +76,8 @@ services:
   redis-exporter:
     image: oliver006/redis_exporter:latest
     container_name: redis-exporter
-    environment:
-      - REDIS_ADDR=redis://redis-container:6379
+    command:
+      - '--redis.addr=redis://redis-container:6379'
     ports:
       - '9121:9121'
     restart: always
@@ -88,7 +88,7 @@ services:
     image: bitnami/mongodb-exporter:latest
     container_name: mongodb-exporter
     command:
-      - --mongodb.uri=mongodb://mongo-container:27017
+      - '--mongodb.uri=mongodb://mongo-container:27017'
     ports:
       - '9216:9216'
     restart: always
@@ -99,7 +99,7 @@ services:
     image: danielqsj/kafka-exporter:latest
     container_name: kafka-exporter
     command:
-      - --kafka.server=kafka-container:9092
+      - '--kafka.server=kafka-container:9092'
     ports:
       - '9308:9308'
     restart: always
