@@ -88,7 +88,7 @@ services:
     image: percona/mongodb_exporter:0.47.1
     container_name: mongodb-exporter
     command:
-      - '--mongodb.uri=mongodb://mongo-container:27017'
+      - '--mongodb.uri=mongodb://mongo-container:27017 --collect-all'
     ports:
       - '9216:9216'
     restart: always
