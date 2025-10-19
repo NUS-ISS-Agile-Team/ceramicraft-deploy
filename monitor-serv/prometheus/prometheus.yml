@@ -15,6 +15,31 @@ scrape_configs:
     static_configs:
       - targets: ['cadvisor:8080']
 
+  - job_name: 'order-service'
+    metrics_path: "/order-ms/v1/metrics"
+    static_configs:
+      - targets: ["ceramicraft-order-mservice:8080"]
+
+  - job_name: 'payment-service'
+    metrics_path: "/payment-ms/v1/metrics"
+    static_configs:
+      - targets: ["ceramicraft-payment-mservice:8080"]
+
+  - job_name: 'comment-service'
+    metrics_path: "/comment-ms/v1/metrics"
+    static_configs:
+      - targets: ["ceramicraft-comment-mservice:8080"]
+
+  - job_name: 'user-service'
+    metrics_path: "/user-ms/v1/metrics"
+    static_configs:
+      - targets: ["ceramicraft-user-mservice:8080"]
+
+  - job_name: 'product-service'
+    metrics_path: "/product-ms/v1/metrics"
+    static_configs:
+      - targets: ["ceramicraft-commodity-mservice:8080"]
+
   - job_name: 'mysql'
     file_sd_configs:
       - files:
@@ -34,8 +59,3 @@ scrape_configs:
     file_sd_configs:
       - files:
           - /etc/prometheus/targets/kafka.json
-
-  - job_name: 'golang-service'
-    file_sd_configs:
-      - files:
-          - /etc/prometheus/targets/golang.json

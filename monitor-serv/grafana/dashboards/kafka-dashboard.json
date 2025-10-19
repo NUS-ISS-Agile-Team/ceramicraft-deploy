@@ -1035,7 +1035,7 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "",
+  "timezone": "browser",
   "title": "Kafka Monitoring Dashboard",
   "uid": "kafka-dashboard",
   "version": 1

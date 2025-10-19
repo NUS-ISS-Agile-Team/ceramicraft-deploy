@@ -1064,7 +1064,7 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "",
+  "timezone": "browser",
   "title": "MongoDB Monitoring Dashboard",
   "uid": "mongodb-dashboard",
   "version": 1
