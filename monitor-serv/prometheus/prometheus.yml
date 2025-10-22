@@ -15,6 +15,25 @@ scrape_configs:
     static_configs:
       - targets: ['cadvisor:8080']
 
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ["mysqld-exporter:9104"]
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ["mongodb-exporter:9216"]
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ["kafka-exporter:9308"]
+
+
+# Application Services
+
   - job_name: 'order-service'
     metrics_path: "/order-ms/v1/metrics"
     static_configs:
@@ -39,23 +58,3 @@ scrape_configs:
     metrics_path: "/product-ms/v1/metrics"
     static_configs:
       - targets: ["ceramicraft-commodity-mservice:8080"]
-
-  - job_name: 'mysql'
-    file_sd_configs:
-      - files:
-          - /etc/prometheus/targets/mysql.json
-
-  - job_name: 'redis'
-    file_sd_configs:
-      - files:
-          - /etc/prometheus/targets/redis.json
-
-  - job_name: 'mongodb'
-    file_sd_configs:
-      - files:
-          - /etc/prometheus/targets/mongo.json
-
-  - job_name: 'kafka'
-    file_sd_configs:
-      - files:
-          - /etc/prometheus/targets/kafka.json

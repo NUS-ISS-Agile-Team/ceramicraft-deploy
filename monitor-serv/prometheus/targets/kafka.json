@@ -1,6 +1,0 @@
-[
-  {
-    "targets": ["kafka-exporter:9308"],
-    "labels": {"job": "kafka"}
-  }
-]
