@@ -16,3 +16,6 @@
 [submodule "ms-cmdt"]
 	path = ms-cmdt
 	url = https://github.com/NUS-ISS-Agile-Team/ceramicraft-commodity-mservice.git
+[submodule "ms-comt"]
+	path = ms-comt
+	url = https://github.com/NUS-ISS-Agile-Team/ceramicraft-comment-mservice.git
