@@ -10,13 +10,14 @@ on:
         options:
           - 'all'
           - 'fe-mer,fe-cus'
-          - 'ms-user,ms-order,ms-pay,ms-cmdt'
+          - 'ms-user,ms-order,ms-pay,ms-cmdt,ms-comt'
           - 'fe-mer'
           - 'fe-cus'
           - 'ms-user'
           - 'ms-order'
           - 'ms-pay'
           - 'ms-cmdt'
+          - 'ms-comt'
         default: 'all'
       
       create_pr:

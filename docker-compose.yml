@@ -1,204 +1,159 @@
 services:
   ceramicraft-merchant-frontend:
     build: fe-mer
-    hostname: femer.local
     container_name: ceramicraft-merchant-frontend
-    networks:
-      - ceramicraft
     restart: unless-stopped
-
   ceramicraft-customer-frontend:
     build: fe-cus
-    hostname: fecus.local
     container_name: ceramicraft-customer-frontend
-    networks:
-      - ceramicraft
     restart: unless-stopped
-
-  ceramicraft-user-mservice:
-    build: ms-user/server
-    hostname: msuser.local
-    container_name: ceramicraft-user-mservice
-    environment:
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - SMTP_EMAIL_FROM=${SMTP_USERNAME}
-      - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - ceramicraft
-    restart: unless-stopped
-
-  ceramicraft-cmdt-mservice:
-    build: ms-cmdt/server
-    hostname: mscmdt.local
-    container_name: ceramicraft-cmdt-mservice
-    environment:
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - SMTP_EMAIL_FROM=${SMTP_USERNAME}
-      - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - ceramicraft
-    restart: unless-stopped
-
-  ceramicraft-order-mservice:
-    build: ms-order/server
-    hostname: msorder.local
-    container_name: ceramicraft-order-mservice
-    environment:
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - SMTP_EMAIL_FROM=${SMTP_USERNAME}
-      - JWT_SECRET=${JWT_SECRET}
-      - KAFKA_BROKER=${KAFKA_INTERNAL_HOST}:${KAFKA_INTERNAL_PORT}
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - ceramicraft
-    restart: unless-stopped
-
-  ceramicraft-pay-mservice:
-    build: ms-pay/server
-    hostname: mspay.local
-    container_name: ceramicraft-pay-mservice
-    environment:
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - SMTP_EMAIL_FROM=${SMTP_USERNAME}
-      - JWT_SECRET=${JWT_SECRET}
-      - KAFKA_BROKER=${KAFKA_INTERNAL_HOST}:${KAFKA_INTERNAL_PORT}
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - ceramicraft
-    restart: unless-stopped
-
-  mysql:
-    image: mysql:${MYSQL_VERSION}
-    hostname: ${DB_HOSTNAME}
-    container_name: mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - ceramicraft
-    ports:
-      - "${MYSQL_PORT}:3306"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
-      timeout: 10s
-      retries: 10
-      interval: 5s
-      start_period: 20s
-
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
-    hostname: phpmyadmin.local
-    container_name: phpmyadmin
-    environment:
-      - PMA_HOST=${DB_HOSTNAME}
-      - PMA_PORT=3306
-      - PMA_USER=root
-      - PMA_PASSWORD=${DB_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-    ports:
-      - "${PHPMYADMIN_PORT}:80"
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - ceramicraft
-    restart: unless-stopped
-
-  # Zookeeper (Kafka需要)
-  zookeeper:
-    image: confluentinc/cp-zookeeper:${ZOOKEEPER_VERSION}
-    hostname: zookeeper.local
-    container_name: ceramicraft-zookeeper
-    restart: unless-stopped
-    environment:
-      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT}
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "${ZOOKEEPER_PORT}:2181"
-    networks:
-      - ceramicraft
-
-  # Kafka消息队列
-  kafka:
-    image: confluentinc/cp-kafka:${KAFKA_VERSION}
-    hostname: kafka-container
-    container_name: ceramicraft-kafka
-    restart: unless-stopped
-    depends_on:
-      - zookeeper
-    ports:
-      - "${KAFKA_PORT}:9092"
-      - "${KAFKA_EXTERNAL_PORT}:9094"
-    environment:
-      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_PORT}
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:${KAFKA_INTERNAL_PORT},PLAINTEXT_HOST://localhost:${KAFKA_PORT}
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-    volumes:
-      - kafka_data:/var/lib/kafka/data
-    networks:
-      - ceramicraft
-
-  # Kafka UI管理界面
-  kafka-ui:
-    image: ghcr.io/kafbat/kafka-ui:latest
-    hostname: kafka-ui.local
-    container_name: ceramicraft-kafka-ui
-    restart: unless-stopped
-    depends_on:
-      - kafka
-    ports:
-      - "${KAFKA_UI_PORT}:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:${KAFKA_INTERNAL_PORT}
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:${ZOOKEEPER_PORT}
-    networks:
-      - ceramicraft
-
   nginx:
-    image: nginx:${NGINX_VERSION}
-    hostname: nginx.local
-    container_name: nginx
+    image: nginx:1.29-alpine
+    container_name: nginx-container
     ports:
-      - "${NGINX_HTTP_PORT}:80"
-      - "${NGINX_HTTPS_PORT}:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
     depends_on:
       - ceramicraft-merchant-frontend
       - ceramicraft-customer-frontend
-      - ceramicraft-user-mservice
-    networks:
-      - ceramicraft
     restart: unless-stopped
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456"]
+      timeout: 10s
+      retries: 10
+      interval: 5s
+      start_period: 20s
+  ceramicraft-user-mservice:
+    build: ms-user/server
+    container_name: ceramicraft-user-mservice
+    env_file:
+      - env-file
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+  ceramicraft-product-mservice:
+    build: ms-cmdt/server
+    container_name: ceramicraft-product-mservice
+    env_file:
+      - env-file
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+  ceramicraft-order-mservice:
+    build: ms-order/server
+    container_name: ceramicraft-order-mservice
+    env_file:
+      - env-file
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+  ceramicraft-payment-mservice:
+    build: ms-pay/server
+    container_name: ceramicraft-payment-mservice
+    env_file:
+      - env-file
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+  ceramicraft-comment-mservice:
+    build: ms-comt/server
+    container_name: ceramicraft-comment-mservice
+    env_file:
+      - env-file
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+  kafka:
+    image: confluentinc/cp-kafka:8.1.0
+    container_name: kafka-container
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-container:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-container:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      timeout: 10s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+  mongodb:
+    image: mongo:8.0
+    container_name: mongo-container
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      timeout: 10s
+      retries: 5
+      interval: 10s
+      start_period: 20s
+  redis:
+    image: redis:8.2-alpine
+    container_name: redis-container
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      timeout: 10s
+      retries: 5
+      interval: 10s
+      start_period: 10s
 
 networks:
-  ceramicraft:
+  default:
     driver: "bridge"
 
 volumes:
   mysql_data:
     driver: local
   kafka_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  redis_data:
     driver: local
