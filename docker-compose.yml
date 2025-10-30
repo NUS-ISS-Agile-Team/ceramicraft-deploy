@@ -8,7 +8,7 @@ services:
     container_name: ceramicraft-customer-frontend
     restart: unless-stopped
   nginx:
-    image: nginx:1.29-alpine
+    image: nginx:alpine
     container_name: nginx-container
     ports:
       - "80:80"
@@ -16,6 +16,11 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
     depends_on:
+      - ceramicraft-user-mservice
+      - ceramicraft-product-mservice
+      - ceramicraft-order-mservice
+      - ceramicraft-payment-mservice
+      - ceramicraft-comment-mservice
       - ceramicraft-merchant-frontend
       - ceramicraft-customer-frontend
     restart: unless-stopped
@@ -30,10 +35,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456"]
-      timeout: 10s
+      timeout: 20s
       retries: 10
-      interval: 5s
-      start_period: 20s
+      interval: 20s
+      start_period: 30s
   ceramicraft-user-mservice:
     build: ms-user/server
     container_name: ceramicraft-user-mservice
@@ -115,9 +120,9 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
-      timeout: 10s
+      timeout: 20s
       retries: 10
-      interval: 10s
+      interval: 20s
       start_period: 30s
   mongodb:
     image: mongo:8.0
@@ -127,10 +132,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      timeout: 10s
+      timeout: 20s
       retries: 5
-      interval: 10s
-      start_period: 20s
+      interval: 20s
+      start_period: 30s
   redis:
     image: redis:8.2-alpine
     container_name: redis-container
@@ -139,10 +144,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      timeout: 10s
+      timeout: 20s
       retries: 5
-      interval: 10s
-      start_period: 10s
+      interval: 20s
+      start_period: 30s
 
 networks:
   default:
